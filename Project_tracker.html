@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบติดตามโครงการ</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Fonts (Kanit) for Thai text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Apply the Kanit font to the entire page */
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #f7fafc; /* Light gray background */
+        }
+        /* Custom styles for active tab */
+        .tab-active {
+            background-color: #3b82f6; /* Blue-500 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        /* Custom styles for inactive tabs */
+        .tab-inactive {
+            background-color: white;
+            color: #4b5563; /* Gray-600 */
+        }
+        /* Animation for project list items */
+        .project-item {
+            transition: all 0.3s ease-in-out;
+            transform-origin: top;
+        }
+        .project-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        /* Status badge styles */
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <!-- Header Section -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8">
+            <div class="flex items-center space-x-4 mb-4 md:mb-0">
+                <!-- Placeholder Logo -->
+                <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-gray-700">ระบบติดตาม</h1>
+                    <p class="text-sm md:text-base text-gray-500">โครงการ 1 อำเภอ 1 โรงเรียนคุณภาพ</p>
+                </div>
+            </div>
+            <div class="relative w-full md:w-72">
+                <input type="text" id="searchBox" placeholder="ค้นหาโครงการ..." class="w-full pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm">
+                <div class="absolute top-0 left-0 flex items-center h-full pl-3">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
+        </header>
+
+        <!-- Charts Section -->
+        <main>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <!-- Main Donut Chart -->
+                <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4 text-center">สถานะโครงการทั้งหมด</h2>
+                    <div class="h-64 flex items-center justify-center">
+                        <canvas id="allProjectsChart"></canvas>
+                    </div>
+                </div>
+                <!-- Dimension Charts -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4">สถานะโครงการตามด้าน</h2>
+                    <div id="dimensionChartsContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                        <!-- Dimension charts will be injected here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project List Section -->
+            <div class="bg-white p-6 rounded-2xl shadow-lg">
+                <!-- Filter Tabs -->
+                <div id="projectTabs" class="flex flex-wrap items-center gap-2 mb-6">
+                    <!-- Tabs will be injected here by JavaScript -->
+                </div>
+                <!-- Project List -->
+                <div id="projectList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Project items will be injected here by JavaScript -->
+                </div>
+                 <div id="noResults" class="text-center py-12 text-gray-500 hidden">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                    </svg>
+                    <h3 class="mt-2 text-lg font-medium text-gray-900">ไม่พบโครงการ</h3>
+                    <p class="mt-1 text-sm text-gray-500">ไม่พบโครงการที่ตรงกับเกณฑ์การค้นหาของคุณ</p>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        // --- DATA SETUP ---
+        // All project statuses are now set to 'ยังไม่เริ่ม'.
+        const projectData = [
+            { id: 1, name: 'สนับสนุนค่าสาธารณูปโภค', dimension: 'ด้านที่ 1', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 2: ระบบสาธารณูปโภคฯ - มีระบบไฟฟ้า, น้ำสะอาด, อินเทอร์เน็ตความเร็วสูง' },
+            { id: 2, name: 'เรียนฟรี 15 ปี อย่างมีคุณภาพ', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 5: งานบริหารงานทั่วไป - สนับสนุนปัจจัยพื้นฐานนักเรียน' },
+            { id: 3, name: 'โครงการจัดจ้างเจ้าหน้าที่สนับสนุนงานสถานศึกษา', dimension: 'ด้านที่ 1', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 3: ระบบความปลอดภัย, งานบริหารงานบุคคล - มีบุคลากรดูแลความปลอดภัย, บริหารงานบุคคล' },
+            { id: 4, name: 'ปัจจัยพื้นฐานยากจนและยากจนพิเศษ', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 5: งานบริหารงานทั่วไป, ผลต่อเนื่อง - ดูแลช่วยเหลือนักเรียน, ลดการออกกลางคัน' },
+            { id: 5, name: 'โครงการพัฒนางานระบบการเงินบัญชีและพัสดุ', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 4: งานบริหารงบประมาณ - มีระบบกำกับ ติดตาม ตรวจสอบ' },
+            { id: 6, name: 'โครงการพัฒนาคุณภาพฝ่ายแผนงานและนโยบาย', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1: การบริหารองค์กร - จัดทำแผนพัฒนาคุณภาพการจัดการศึกษา 5 ปี' },
+            { id: 7, name: 'งานซ่อมบำรุงยานพาหนะ', dimension: 'ด้านที่ 1', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1: อาคาร สถานที่ฯ - บำรุงรักษาอาคารโดยรวม' },
+            { id: 8, name: 'โครงการยกระดับคุณภาพการขับเคลื่อนนโยบายและจุดเน้น', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1: การบริหารองค์กร - จัดทำแผนฯ ที่สอดคล้องกับนโยบาย' },
+            { id: 9, name: 'โครงการพัฒนาระบบงานบริการ อาคารสถานที่ และสิ่งแวดล้อม', dimension: 'ด้านที่ 1', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1, 5: อาคาร สถานที่ฯ, งานบริหารงานทั่วไป - ดูแลอาคาร, พื้นที่, ห้องน้ำ, รั้ว' },
+            { id: 10, name: 'โครงการส่งเสริมสุขภาพ และงานโภชนาการ', dimension: 'ด้านที่ 1', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1: อาคาร สถานที่ฯ - มีโรงอาหารและห้องพยาบาลพร้อมใช้งาน' },
+            { id: 11, name: 'โครงการพัฒนาระบบงานโสตทัศนูปกรณ์และงานประชาสัมพันธ์', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 5: งานบริหารงานทั่วไป - ประชาสัมพันธ์ข้อมูลข่าวสาร' },
+            { id: 12, name: 'พัฒนางานระบบดูแลช่วยเหลือนักเรียน', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 5, 2: งานบริหารทั่วไป, กระบวนการจัดการเรียนรู้ - ดูแลนักเรียน, บรรยากาศเชิงบวก' },
+            { id: 13, name: 'พัฒนาระบบภาคีเครือข่าย', dimension: 'ด้านที่ 1', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 3, 1: ระบบความปลอดภัย, การบริหารองค์กร - จัดทำแผนเผชิญเหตุ, สร้างเครือข่าย' },
+            { id: 14, name: 'โครงการพัฒนาศักยภาพครูและบุคลากรทางการศึกษา', dimension: 'ด้านที่ 2', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1, 2, 3: ผู้บริหาร, ครู, บริหารบุคคล - พัฒนาตนเอง, แลกเปลี่ยนเรียนรู้' },
+            { id: 15, name: 'โครงการพัฒนาคุณภาพ เสริมสร้างขวัญและกำลังใจครู', dimension: 'ด้านที่ 2', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1, 3: ผู้บริหาร, บริหารบุคคล - สร้างแรงจูงใจ, สร้างความผูกพัน' },
+            { id: 16, name: 'โครงการพัฒนาระบบงานปฏิคมและงานธุรการ', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 3: งานบริหารงานบุคคล - ดำเนินการบริหารงานบุคคลอย่างมีประสิทธิภาพ' },
+            { id: 17, name: 'ทัศนศึกษาแหล่งเรียนรู้นอกสถานที่', dimension: 'ด้านที่ 4', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 2: กระบวนการจัดการเรียนรู้ฯ - จัดพื้นที่การเรียนรู้นอกห้องเรียน' },
+            { id: 18, name: 'โครงการส่งเสริมคุณธรรม จริยธรรม', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 3: การประเมินคุณลักษณะฯ - ประเมินคุณลักษณะอันพึงประสงค์' },
+            { id: 19, name: 'โครงการพัฒนาระบบบริการเทคโนโลยีสารสนเทศ', dimension: 'ด้านที่ 1', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1, 2, 4: อาคาร, สาธารณูปโภค, ครู, กระบวนการเรียนรู้ - พัฒนาห้องปฏิบัติการ, อินเทอร์เน็ต, อบรมครู' },
+            { id: 20, name: 'โครงการส่งเสริมกิจกรรมลูกเสือ - เนตรนารี', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 3: การประเมินคุณลักษณะฯ - ประเมินคุณลักษณะอันพึงประสงค์' },
+            { id: 21, name: 'โครงการกิจกรรมสร้างสรรค์สังคม', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 3: การประเมินคุณลักษณะฯ - ประเมินคุณลักษณะฯ (จิตอาสา)' },
+            { id: 22, name: 'กิจกรรมนักศึกษาวิชาทหาร', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 3: การประเมินคุณลักษณะฯ - ประเมินคุณลักษณะฯ (ระเบียบวินัย)' },
+            { id: 23, name: 'ส่งเสริมกิจกรรมยุวกาชาด', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 3: การประเมินคุณลักษณะฯ - ประเมินคุณลักษณะอันพึงประสงค์' },
+            { id: 24, name: 'โครงการพัฒนางานแนะแนวศึกษาต่อ', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 2, ผลต่อเนื่อง: บริหารวิชาการ, Impact - ระบบแนะแนว, จำนวนนักเรียนศึกษาต่อ' },
+            { id: 25, name: 'โครงการการจัดการเรียนการสอนทางไกลฯ', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 5: งานบริหารงานทั่วไป - สนับสนุนค่าอินเทอร์เน็ต' },
+            { id: 26, name: 'ส่งเสริมความเป็นเลิศด้านกีฬา', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 4: ความสามารถพิเศษ - นักเรียนได้แสดงออกถึงความสามารถ' },
+            { id: 27, name: 'ส่งเสริมความเป็นเลิศด้านดนตรี', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 4: ความสามารถพิเศษ - นักเรียนได้แสดงออกถึงความสามารถ' },
+            { id: 28, name: 'โครงการส่งเสริมและพัฒนาศักยภาพผู้เรียนในด้านศิลปะ', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 4: ความสามารถพิเศษ - นักเรียนได้แสดงออกถึงความสามารถ' },
+            { id: 29, name: 'ส่งเสริมความเป็นเลิศด้านวิชาการ (ศิลปหัตถกรรม)', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 4: ความสามารถพิเศษ - นักเรียนได้แสดงออกถึงความสามารถ' },
+            { id: 30, name: 'ส่งเสริมความเป็นเลิศทางวิชาการ - Chinese Festival', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 5: งานบริหารงานทั่วไป - จัดบรรยากาศส่งเสริมประสบการณ์ทางภาษา' },
+            { id: 31, name: 'เปิดบ้านวิชาการ (Open House)', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1: การบริหารองค์กร - สร้างเครือข่ายความร่วมมือ' },
+            { id: 32, name: 'โครงการพัฒนาหลักสูตรสถานศึกษา', dimension: 'ด้านที่ 4', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1: หลักสูตรสถานศึกษา - จัดทำและประเมินผลหลักสูตร' },
+            { id: 33, name: 'โครงการการจัดกิจกรรมการเรียนรู้ (จัดซื้อวัสดุ)', dimension: 'ด้านที่ 1', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1: อาคาร สถานที่ฯ - จัดซื้อวัสดุในห้องเรียน' },
+            { id: 34, name: 'โครงการการจัดกิจกรรมการเรียนรู้ (สอนปรับพื้นฐาน)', dimension: 'ด้านที่ 4', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 2: กระบวนการจัดการเรียนรู้ฯ - สร้างความคุ้นเคย, บรรยากาศเชิงบวก' },
+            { id: 35, name: 'โครงการการจัดกิจกรรมการเรียนรู้ (ยกระดับผลสัมฤทธิ์)', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1: ผลการทดสอบระดับชาติฯ - O-NET, PISA' },
+            { id: 36, name: 'โครงการการจัดกิจกรรมการเรียนรู้ (พัฒนางานวัดผลฯ)', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 2, 2: บริหารวิชาการ, กระบวนการเรียนรู้ - ระบบวัดผล, ให้ข้อมูลย้อนกลับ' },
+            { id: 37, name: 'กิจกรรมการนิเทศติดตามการจัดการเรียนรู้', dimension: 'ด้านที่ 2', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1, 2, 1: ผู้บริหาร, บริหารวิชาการ, หลักสูตร - Coaching, นิเทศภายใน, ประเมินหลักสูตร' },
+            { id: 38, name: 'โครงการพัฒนากระบวนการเรียนรู้ฯ (Active Learning)', dimension: 'ด้านที่ 4', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 2: กระบวนการจัดการเรียนรู้ฯ - ส่งเสริมการคิด, การลงมือปฏิบัติ' },
+            { id: 39, name: 'การส่งเสริมพัฒนาความสามารถทางวิทยาศาสตร์และเทคโนโลยี', dimension: 'ด้านที่ 1', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1, 4: อาคาร สถานที่ฯ, ความสามารถพิเศษ - ห้องปฏิบัติการ, แสดงความสามารถ' },
+            { id: 40, name: 'โครงการพัฒนากระบวนการเรียนรู้ฯ (วิชาเสริมอาชีพ)', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 5: ทักษะอาชีพ ทักษะชีวิตฯ - พัฒนาทักษะอาชีพ' },
+            { id: 41, name: 'โครงการแข่งขันความสามารถทางวิชาการ', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 4: ความสามารถพิเศษ - นักเรียนได้แสดงออกถึงความสามารถ' },
+            { id: 42, name: 'กิจกรรมพหุปัญญาเพื่อพัฒนาความสามารถพิเศษ', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 4: ความสามารถพิเศษ - นักเรียนได้แสดงออกถึงความสามารถ' },
+            { id: 43, name: '1 อำเภอ 1 โรงเรียนคุณภาพ', dimension: 'ด้านที่ 1', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบ: ทุกองค์ประกอบ - โครงการภาพรวมครอบคลุมทุกด้าน' },
+            { id: 44, name: 'โครงการปัจฉิมนิเทศนักเรียน/มอบใบประกาศนียบัตร', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบ: ผลต่อเนื่อง (Impact) - จำนวนนักเรียนที่สำเร็จการศึกษา' },
+            { id: 45, name: 'การพัฒนาศูนย์การเรียนรู้ตามหลักปรัชญาของเศรษฐกิจพอเพียงฯ', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1, 5: บริหารองค์กร, ทักษะอาชีพ - สถานศึกษาต้นแบบ, พัฒนาทักษะ' },
+            { id: 46, name: 'การพัฒนาการเรียนรู้อาชีวนวัตวิถี', dimension: 'ด้านที่ 4', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 2, 5: กระบวนการเรียนรู้, ทักษะอาชีพ - ส่งเสริมการปฏิบัติ, พัฒนาทักษะ' },
+            { id: 47, name: 'โครงการพัฒนาคุณภาพงานฝ่ายวิชาการ', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 2: งานบริหารวิชาการ - บริหารงานวิชาการอย่างเป็นระบบ' },
+            { id: 48, name: 'พัฒนาห้องสมุดและส่งเสริมนิสัยรักการอ่าน', dimension: 'ด้านที่ 1', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1, 2: อาคาร สถานที่ฯ, ผลการประเมินทักษะฯ - ห้องสมุดพร้อมใช้, ประเมินการอ่าน' },
+            { id: 49, name: 'การวิจัยในชั้นเรียน', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 2, 2: บริหารวิชาการ, กระบวนการเรียนรู้ - ส่งเสริมการวิจัย, ใช้นวัตกรรม' },
+            { id: 50, name: 'พัฒนางานประกันคุณภาพการศึกษา', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 2: งานบริหารวิชาการ - ระบบประกันคุณภาพภายใน' },
+            { id: 51, name: 'โครงการเรียนรวมและการศึกษาพิเศษ', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 5: งานบริหารงานทั่วไป - ระบบดูแลช่วยเหลือนักเรียน' },
+            { id: 52, name: 'โครงการบริการความรู้สู่ชุมชน', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1: การบริหารองค์กร - สร้างเครือข่ายความร่วมมือกับชุมชน' },
+            { id: 53, name: 'ห้องเรียนพิเศษวิทยาศาสตร์และคณิตศาสตร์', dimension: 'ด้านที่ 1', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1, 4: อาคาร สถานที่ฯ, ความสามารถพิเศษ - ห้องปฏิบัติการ, แสดงความสามารถ' },
+            { id: 54, name: 'โครงการยกผลสัมฤทธิ์กลุ่มสาระการเรียนรู้ภาษาไทย', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 5, 1: บริหารทั่วไป, ผลการทดสอบ - บรรยากาศทางภาษา, ผลสัมฤทธิ์' },
+            { id: 55, name: 'พัฒนากลุ่มสาระการเรียนรู้คณิตศาสตร์', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1: ผลการทดสอบระดับชาติฯ - ผลสัมฤทธิ์ทางการเรียนเฉลี่ย' },
+            { id: 56, name: 'พัฒนากลุ่มสาระวิทยาศาสตร์และเทคโนโลยี', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1: ผลการทดสอบระดับชาติฯ - ผลสัมฤทธิ์ทางการเรียนเฉลี่ย' },
+            { id: 57, name: 'โครงการพัฒนาผู้เรียนกลุ่มสาระการเรียนรู้ภาษาต่างประเทศ', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 5, 4: บริหารทั่วไป, ความสามารถพิเศษ - บรรยากาศทางภาษา, ผลสอบ CEFR/HSK' },
+            { id: 58, name: 'ค่ายภาษาอังกฤษ Bring Out your English', dimension: 'ด้านที่ 3', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 5: งานบริหารงานทั่วไป - จัดบรรยากาศส่งเสริมประสบการณ์ทางภาษา (อังกฤษ)' },
+            { id: 59, 'name': 'พัฒนากลุ่มสาระสังคมศึกษา ศาสนา และวัฒนธรรม', dimension: 'ด้านที่ 5', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 3: การประเมินคุณลักษณะฯ - คุณลักษณะอันพึงประสงค์ (รักชาติ ศาสน์ กษัตริย์)' },
+            { id: 60, name: 'พัฒนากลุ่มสาระการงานอาชีพ', dimension: 'ด้านที่ 1', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1, 5: อาคาร สถานที่ฯ, ทักษะอาชีพ - ห้องปฏิบัติการ, ส่งเสริมทักษะ' },
+            { id: 61, name: 'โครงการพัฒนากลุ่มสาระสุขศึกษาและพลศึกษา', dimension: 'ด้านที่ 1', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 1, 4: อาคาร สถานที่ฯ, ความสามารถพิเศษ - พื้นที่กิจกรรม, แสดงความสามารถ' },
+            { id: 62, name: 'โครงการพัฒนาคุณภาพกลุ่มการเรียนรู้ศิลปะ', dimension: 'ด้านที่ 4', status: 'ยังไม่เริ่ม', description: 'องค์ประกอบที่ 2, 4: กระบวนการเรียนรู้, ความสามารถพิเศษ - จัดซื้อสื่อ, แสดงความสามารถ' }
+        ];
+
+
+        const dimensions = ['ด้านที่ 1', 'ด้านที่ 2', 'ด้านที่ 3', 'ด้านที่ 4', 'ด้านที่ 5'];
+        const statuses = {
+            'เสร็จสิ้น': { label: 'เสร็จสิ้น', color: '#10b981' /* Emerald 500 */, bgColor: '#d1fae5' },
+            'กำลังดำเนินการ': { label: 'กำลังดำเนินการ', color: '#f59e0b' /* Amber 500 */, bgColor: '#fef3c7' },
+            'ยังไม่เริ่ม': { label: 'ยังไม่เริ่ม', color: '#6b7280' /* Gray 500 */, bgColor: '#e5e7eb' }
+        };
+
+        let activeFilter = 'ทั้งหมด';
+        let searchTerm = '';
+        let chartInstances = {}; // To store chart objects
+
+        // --- UTILITY FUNCTIONS ---
+        
+        /**
+         * Counts projects by status from a given list of projects.
+         * @param {Array} projects - The list of projects to analyze.
+         * @returns {Object} An object with counts for each status.
+         */
+        function getStatusCounts(projects) {
+            const counts = { 'เสร็จสิ้น': 0, 'กำลังดำเนินการ': 0, 'ยังไม่เริ่ม': 0 };
+            projects.forEach(p => {
+                if (p.status in counts) {
+                    counts[p.status]++;
+                }
+            });
+            return counts;
+        }
+
+        /**
+         * Creates or updates a donut chart.
+         * @param {string} canvasId - The ID of the canvas element.
+         * @param {string} title - The chart title (used for accessibility).
+         * @param {Object} counts - The data object with status counts.
+         * @param {boolean} isSmall - Flag for smaller chart configuration.
+         */
+        function createDonutChart(canvasId, title, counts, isSmall = false) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            const chartData = {
+                labels: Object.keys(statuses),
+                datasets: [{
+                    data: Object.values(counts),
+                    backgroundColor: Object.values(statuses).map(s => s.color),
+                    borderColor: '#ffffff',
+                    borderWidth: isSmall ? 2 : 4,
+                    hoverOffset: 8
+                }]
+            };
+            
+            const options = {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: isSmall ? '70%' : '60%',
+                plugins: {
+                    legend: {
+                        display: !isSmall,
+                        position: 'bottom',
+                        labels: {
+                            font: { family: "'Kanit', sans-serif" }
+                        }
+                    },
+                    tooltip: {
+                        titleFont: { family: "'Kanit', sans-serif" },
+                        bodyFont: { family: "'Kanit', sans-serif" }
+                    },
+                    title: { display: false }
+                }
+            };
+            
+            // Destroy previous chart instance if it exists to prevent conflicts
+            if (chartInstances[canvasId]) {
+                chartInstances[canvasId].destroy();
+            }
+
+            chartInstances[canvasId] = new Chart(ctx, {
+                type: 'doughnut',
+                data: chartData,
+                options: options
+            });
+        }
+
+        /**
+         * Renders the list of projects based on the current filter and search term.
+         */
+        function renderProjectList() {
+            const listContainer = document.getElementById('projectList');
+            const noResultsEl = document.getElementById('noResults');
+            listContainer.innerHTML = '';
+
+            let filteredProjects = projectData;
+
+            // Apply dimension filter
+            if (activeFilter !== 'ทั้งหมด') {
+                filteredProjects = filteredProjects.filter(p => p.dimension === activeFilter);
+            }
+
+            // Apply search filter
+            if (searchTerm) {
+                filteredProjects = filteredProjects.filter(p => 
+                    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    p.description.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+
+            if (filteredProjects.length === 0) {
+                noResultsEl.classList.remove('hidden');
+            } else {
+                noResultsEl.classList.add('hidden');
+            }
+
+            filteredProjects.forEach(project => {
+                const statusInfo = statuses[project.status];
+                const projectCard = `
+                    <div class="project-item bg-white border border-gray-200 rounded-xl p-5 flex flex-col h-full">
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded-md">${project.dimension}</span>
+                                <span class="status-badge" style="background-color:${statusInfo.bgColor}; color:${statusInfo.color};">
+                                    ${project.status}
+                                </span>
+                            </div>
+                            <h3 class="font-bold text-lg text-gray-800 mb-2">${project.name}</h3>
+                            <p class="text-gray-500 text-sm">${project.description}</p>
+                        </div>
+                    </div>
+                `;
+                listContainer.innerHTML += projectCard;
+            });
+        }
+        
+        /**
+         * Updates the active state of the filter tabs.
+         */
+        function updateTabs() {
+            const tabsContainer = document.getElementById('projectTabs');
+            tabsContainer.querySelectorAll('button').forEach(button => {
+                if (button.dataset.filter === activeFilter) {
+                    button.classList.add('tab-active');
+                    button.classList.remove('tab-inactive');
+                } else {
+                    button.classList.remove('tab-active');
+                    button.classList.add('tab-inactive');
+                }
+            });
+        }
+
+        // --- INITIALIZATION ---
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Create Main Chart
+            const allProjectsCounts = getStatusCounts(projectData);
+            createDonutChart('allProjectsChart', 'สถานะโครงการทั้งหมด', allProjectsCounts);
+
+            // 2. Create Dimension Charts
+            const dimensionContainer = document.getElementById('dimensionChartsContainer');
+            dimensions.forEach((dim, index) => {
+                const dimProjects = projectData.filter(p => p.dimension === dim);
+                const dimCounts = getStatusCounts(dimProjects);
+                const chartId = `dimChart${index}`;
+
+                const chartWrapper = document.createElement('div');
+                chartWrapper.className = 'text-center';
+                chartWrapper.innerHTML = `
+                    <div class="h-28 w-28 mx-auto mb-2"><canvas id="${chartId}"></canvas></div>
+                    <p class="font-semibold text-sm">${dim}</p>
+                `;
+                dimensionContainer.appendChild(chartWrapper);
+                
+                createDonutChart(chartId, dim, dimCounts, true);
+            });
+
+            // 3. Create Filter Tabs
+            const tabsContainer = document.getElementById('projectTabs');
+            const allFilters = ['ทั้งหมด', ...dimensions];
+            allFilters.forEach(filter => {
+                const button = document.createElement('button');
+                button.textContent = filter;
+                button.dataset.filter = filter;
+                button.className = 'px-4 py-2 rounded-full font-medium text-sm transition-all duration-200';
+                tabsContainer.appendChild(button);
+            });
+            
+            // 4. Set up Event Listeners
+            tabsContainer.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    activeFilter = e.target.dataset.filter;
+                    updateTabs();
+                    renderProjectList();
+                }
+            });
+
+            document.getElementById('searchBox').addEventListener('input', (e) => {
+                searchTerm = e.target.value;
+                renderProjectList();
+            });
+
+            // 5. Initial Render
+            updateTabs();
+            renderProjectList();
+        });
+
+    </script>
+</body>
+</html>
