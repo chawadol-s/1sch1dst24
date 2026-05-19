@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Management SWOT & TOWS Strategy Dashboard</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Prompt', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            color: #334155;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .dashboard-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        /* Header Banner */
+        .header-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .header-banner h1 {
+            margin: 0;
+            font-size: 24pt;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .header-banner p {
+            margin: 10px 0 0 0;
+            font-size: 12pt;
+            opacity: 0.9;
+        }
+        .meta-info {
+            margin-top: 15px;
+            font-size: 10pt;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 6px 12px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        /* KPI Cards Section */
+        .kpi-row {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            margin-bottom: 30px;
+            border-collapse: separate;
+            border-spacing: 15px 0;
+        }
+        .kpi-card {
+            display: table-cell;
+            background: #ffffff;
+            border-left: 5px solid #3b82f6;
+            padding: 20px;
+            border-radius: 6px;
+            vertical-align: top;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border-top: 1px solid #e2e8f0;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .kpi-card.strengths { border-left-color: #10b981; }
+        .kpi-card.weaknesses { border-left-color: #ef4444; }
+        .kpi-card.opportunities { border-left-color: #f59e0b; }
+        .kpi-card.threats { border-left-color: #ec4899; }
+        
+        .kpi-title {
+            font-size: 10pt;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .kpi-value {
+            font-size: 18pt;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+        .kpi-desc {
+            font-size: 9.5pt;
+            color: #64748b;
+        }
+
+        /* Section Heading Style */
+        .section-title {
+            font-size: 16pt;
+            color: #1e3a8a;
+            border-left: 5px solid #1e3a8a;
+            padding-left: 12px;
+            margin: 40px 0 20px 0;
+            font-weight: 700;
+        }
+
+        /* SWOT 2x2 Grid Layout using Table for Layout Safety */
+        .swot-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 15px;
+            margin-bottom: 30px;
+        }
+        .swot-cell {
+            width: 50%;
+            vertical-align: top;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .bg-strengths { background-color: #f0fdf4; border: 1px solid #bbf7d0; }
+        .bg-weaknesses { background-color: #fff5f5; border: 1px solid #fed7d7; }
+        .bg-opportunities { background-color: #fffbeb; border: 1px solid #fef3c7; }
+        .bg-threats { background-color: #fff7ed; border: 1px solid #ffedd5; }
+
+        .swot-cell-title {
+            font-size: 14pt;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .text-strengths { color: #15803d; }
+        .text-weaknesses { color: #c53030; }
+        .text-opportunities { color: #b45309; }
+        .text-threats { color: #c2410c; }
+
+        .swot-list {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .swot-list li {
+            margin-bottom: 10px;
+            font-size: 11pt;
+        }
+        .swot-list li strong {
+            color: #1e293b;
+        }
+
+        /* TOWS Matrix Table */
+        .tows-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .tows-table th, .tows-table td {
+            padding: 18px;
+            border: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+        .tows-table th {
+            background-color: #f8fafc;
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 11pt;
+            text-align: left;
+        }
+        .tows-header-corner {
+            background-color: #e2e8f0 !important;
+            width: 20%;
+        }
+        .tows-strategy-box {
+            background-color: #ffffff;
+        }
+        .strategy-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 9pt;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .tag-so { background-color: #dcfce7; color: #15803d; }
+        .tag-wo { background-color: #fef3c7; color: #b45309; }
+        .tag-st { background-color: #e0f2fe; color: #0369a1; }
+        .tag-wt { background-color: #fce7f3; color: #b91c1c; }
+
+        .strategy-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .strategy-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        .strategy-title {
+            font-weight: 700;
+            font-size: 11pt;
+            color: #0f172a;
+            margin-bottom: 5px;
+        }
+        .strategy-text {
+            font-size: 10.5pt;
+            color: #475569;
+            margin: 0 0 5px 0;
+        }
+        .strategy-mapping {
+            font-size: 9pt;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* Actionable Roadmap Table */
+        .roadmap-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .roadmap-table th {
+            background-color: #1e3a8a;
+            color: #ffffff;
+            padding: 12px 15px;
+            font-weight: 600;
+            font-size: 11pt;
+            text-align: left;
+        }
+        .roadmap-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 10.5pt;
+            vertical-align: top;
+        }
+        .roadmap-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        .timeline-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 9pt;
+            font-weight: 600;
+            color: #ffffff;
+            text-align: center;
+            width: 100px;
+        }
+        .bg-short { background-color: #10b981; }
+        .bg-medium { background-color: #3b82f6; }
+        .bg-long { background-color: #8b5cf6; }
+
+        .priority-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .priority-high { background-color: #ef4444; }
+        .priority-medium { background-color: #f59e0b; }
+        .priority-low { background-color: #10b981; }
+
+        /* Footer */
+        .dashboard-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            font-size: 10pt;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    
+    <!-- Header Banner -->
+    <div class="header-banner">
+        <h1>กลยุทธ์ฝ่ายบริหารวิชาการ: SWOT & TOWS Comprehensive Dashboard</h1>
+        <p>รายงานผลการวิเคราะห์สถานการณ์เชิงลึกและการจับคู่กลยุทธ์เพื่อยกระดับคุณภาพการจัดการศึกษา</p>
+        <div class="meta-info">
+            <strong>แหล่งข้อมูล:</strong> สรุปผลจากการประชุมฝ่ายบริหารวิชาการโรงเรียน • <strong>สถานะแผน:</strong> พร้อมนำไปปฏิบัติจริง (Actionable)
+        </div>
+    </div>
+
+    <!-- KPI Cards Overview -->
+    <div class="kpi-row">
+        <div class="kpi-card strengths">
+            <div class="kpi-title">ปัจจัยภายใน: จุดแข็ง (S)</div>
+            <div class="kpi-value">4 แกนหลัก</div>
+            <div class="kpi-desc">ความสามัคลี, นโยบายเข้าถึงการศึกษา, ความคล่องตัวสูง, และระบบประสานงานที่รวดเร็ว</div>
+        </div>
+        <div class="kpi-card weaknesses">
+            <div class="kpi-title">ปัจจัยภายใน: จุดอ่อน (W)</div>
+            <div class="kpi-value">2 ประเด็นวิกฤต</div>
+            <div class="kpi-desc">ภาระงานครูล้นมือ (Time Poverty) และข้อจำกัดด้านงบประมาณ/ห้องปฏิบัติการทันสมัย</div>
+        </div>
+        <div class="kpi-card opportunities">
+            <div class="kpi-title">ปัจจัยภายนอก: โอกาส (O)</div>
+            <div class="kpi-value">2 ช่องทางเติบโต</div>
+            <div class="kpi-desc">เครือข่ายความร่วมมือชุมชน/สถานศึกษาอื่น และแหล่งข้อมูลเทคโนโลยีดิจิทัลที่เปิดกว้าง</div>
+        </div>
+        <div class="kpi-card threats">
+            <div class="kpi-title">ปัจจัยภายนอก: อุปสรรค (T)</div>
+            <div class="kpi-value">2 ความเสี่ยงภายนอก</div>
+            <div class="kpi-desc">ข้อจำกัดทางเศรษฐกิจของผู้ปกครอง และการแข่งขันที่สูงขึ้นจากสถาบันการศึกษาคู่แข่ง</div>
+        </div>
+    </div>
+
+    <!-- Section 1: Detailed SWOT Matrix -->
+    <div class="section-title">1. ตารางวิเคราะห์สถานการณ์สิ่งแวดล้อม (SWOT Matrix)</div>
+    
+    <table class="swot-table">
+        <tr>
+            <!-- Strengths -->
+            <td class="swot-cell bg-strengths">
+                <div class="swot-cell-title text-strengths">
+                    🟢 จุดแข็ง (Strengths - S)
+                </div>
+                <ul class="swot-list">
+                    <li><strong>S1: พลังความสามัคคีขององค์กร:</strong> บุคลากรครูมีความพร้อมเพรียงและร่วมใจสูงในการจัดกิจกรรมส่งเสริมการเรียนรู้ของเด็ก</li>
+                    <li><strong>S2: นโยบายเปิดกว้างและยั่งยืน:</strong> มีการสร้างโอกาสให้ผู้เรียนเข้าถึงการศึกษาอย่างทั่วถึง และมุ่งส่งเสริมการเรียนรู้ตลอดชีวิต</li>
+                    <li><strong>S3: โครงสร้างการบริหารที่ยืดหยุ่น:</strong> ฝ่ายบริหารวิชาการมีความคล่องตัวสูงในการตัดสินใจและการปรับตัวต่อสถานการณ์</li>
+                    <li><strong>S4: การสื่อสารภายในที่เป็นเลิศ:</strong> ระบบการประสานงานระหว่างฝ่ายวิชาการ ครูผู้สอน และผู้บริหาร มีความทั่วถึง รวดเร็ว และไร้รอยต่อ</li>
+                </ul>
+            </td>
+            <!-- Weaknesses -->
+            <td class="swot-cell bg-weaknesses">
+                <div class="swot-cell-title text-weaknesses">
+                    🔴 จุดอ่อน (Weaknesses - W)
+                </div>
+                <ul class="swot-list">
+                    <li><strong>W1: ภาวะภาระงานล้นมือ (Time Poverty):</strong> ครูต้องสอนหลายรหัสวิชาและรับผิดชอบมากกว่า 1 โครงการ ประกอบกับงานเอกสารจำนวนมาก ส่งผลให้มีเวลาทุ่มเทกับการพัฒนาการเรียนการสอนและการคิดค้นนวัตกรรมลดลง</li>
+                    <li><strong>W2: ข้อจำกัดด้านทรัพยากรกายภาพ:</strong> งบประมาณและทรัพยากรระบบมีจำกัด ทำให้ขาดแคลนห้องปฏิบัติการที่ทันสมัยเพื่อตอบสนองการเรียนรู้ยุคใหม่</li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <!-- Opportunities -->
+            <td class="swot-cell bg-opportunities">
+                <div class="swot-cell-title text-opportunities">
+                    🟡 โอกาส (Opportunities - O)
+                </div>
+                <ul class="swot-list">
+                    <li><strong>O1: เครือข่ายพันธมิตรภายนอก:</strong> มีเครือข่ายความร่วมมือที่เหนียวแน่นกับสถานศึกษาอื่น องค์กรในท้องถิ่น รวมทั้งชุมชนรอบข้าง</li>
+                    <li><strong>O2: นิเวศน์การเรียนรู้ดิจิทัล:</strong> การเปิดกว้างของแหล่งข้อมูลและเทคโนโลยีภายนอก เอื้อต่อการให้ครูนำมาพัฒนาตนเองและสร้างสื่อการเรียนการสอนที่มีประสิทธิภาพสูงได้โดยไม่มีค่าใช้จ่ายลิขสิทธิ์แพง</li>
+                </ul>
+            </td>
+            <!-- Threats -->
+            <td class="swot-cell bg-threats">
+                <div class="swot-cell-title text-threats">
+                    🟠 อุปสรรค (Threats - T)
+                </div>
+                <ul class="swot-list">
+                    <li><strong>T1: ช่องว่างทางดิจิทัลจากเศรษฐกิจผู้ปกครอง:</strong> ข้อจำกัดทางรายได้ของผู้ปกครองบางกลุ่ม ทำให้ไม่สามารถสนับสนุนอุปกรณ์เทคโนโลยีหรืออินเทอร์เน็ตความเร็วสูงให้นักเรียนใช้งานได้อย่างเต็มประสิทธิภาพ</li>
+                    <li><strong>T2: การแข่งขันในตลาดการศึกษาที่รุนแรง:</strong> สถาบันคู่แข่งมีการทำการตลาดและการดึงตัวนักเรียนสูง เกิดความเสี่ยงต่อภาวะสมองไหลหรือจำนวนนักเรียนลดลง</li>
+                </ul>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Section 2: TOWS Matrix Strategic Formulation -->
+    <div class="section-title">2. ตารางผสานกลยุทธ์เชิงบูรณาการ (TOWS Matrix)</div>
+    
+    <table class="tows-table">
+        <tr>
+            <th class="tows-header-corner">ปัจจัยภายใน / ภายนอก</th>
+            <th>โอกาสภายนอก (Opportunities - O)<br><span style="font-weight:normal; font-size:9.5pt; color:#64748b;">O1: เครือข่ายสถานศึกษาและชุมชน<br>O2: แหล่งข้อมูลและเทคโนโลยีภายนอก</span></th>
+            <th>อุปสรรคภายนอก (Threats - T)<br><span style="font-weight:normal; font-size:9.5pt; color:#64748b;">T1: ข้อจำกัดทางเศรษฐกิจของผู้ปกครอง<br>T2: การแข่งขันที่สูงขึ้นจากสถาบันอื่น</span></th>
+        </tr>
+        <tr>
+            <th>จุดแข็งภายใน (Strengths - S)<br><span style="font-weight:normal; font-size:9.5pt; color:#64748b;">S1: ครูสามัคคีร่วมใจ<br>S2: นโยบายเรียนรู้ตลอดชีวิต<br>S3: บริหารจัดการคล่องตัว<br>S4: ประสานงานรวดเร็วทั่วถึง</span></th>
+            <td class="tows-strategy-box">
+                <span class="strategy-tag tag-so">กลยุทธ์เชิงรุก (SO Strategy)</span>
+                
+                <div class="strategy-item">
+                    <div class="strategy-title">SO1: โครงการภาคีเครือข่ายนวัตกรรมการสอนชุมชน</div>
+                    <p class="strategy-text">ขับเคลื่อนพลังความสามัคคีของครู (S1) และระบบประสานงานที่รวดเร็ว (S4) ร่วมมือกับเครือข่ายสถานศึกษาพันธมิตร (O1) เพื่อแบ่งปันคลังสื่อการสอนและจัดกิจกรรมยกระดับวิชาการร่วมกัน</p>
+                    <div class="strategy-mapping">จับคู่ปัจจัย: S1, S4 + O1</div>
+                </div>
+
+                <div class="strategy-item">
+                    <div class="strategy-title">SO2: แพลตฟอร์มคลังสมองดิจิทัลเพื่อการเรียนรู้ตลอดชีวิต</div>
+                    <p class="strategy-text">ใช้ความคล่องตัวในการบริหาร (S3) ผลักดันนโยบายการเรียนรู้ตลอดชีวิต (S2) โดยดึงระบบเทคโนโลยีและแหล่งข้อมูลเปิดจากภายนอก (O2) มาสร้างเป็นคลังบทเรียนออนไลน์ที่ครูและนักเรียนเข้าถึงได้ทุกที่ทุกเวลา</p>
+                    <div class="strategy-mapping">จับคู่ปัจจัย: S2, S3 + O2</div>
+                </div>
+            </td>
+            <td class="tows-strategy-box">
+                <span class="strategy-tag tag-st">กลยุทธ์เชิงป้องกัน (ST Strategy)</span>
+                
+                <div class="strategy-item">
+                    <div class="strategy-title">ST1: นวัตกรรมการเรียนรู้แบบยืดหยุ่น (Hybrid & Low-Tech Alternative)</div>
+                    <p class="strategy-text">ระดมครูร่วมมือกัน (S1) ออกแบบบทเรียนและนวัตกรรมทางเลือกที่พึ่งพาอุปกรณ์ต่ำ (เช่น ชุดการเรียนรู้แบบ On-Hand ร่วมกับ On-Demand อย่างง่าย) เพื่อรองรับกลุ่มนักเรียนที่ครอบครัวขาดแคลนทุนทรัพย์ (T1)</p>
+                    <div class="strategy-mapping">จับคู่ปัจจัย: S1, S2 + T1</div>
+                </div>
+
+                <div class="strategy-item">
+                    <div class="strategy-title">ST2: ชูจุดเด่นหลักสูตรเฉพาะทางดึงดูดใจผู้เรียน (Academic Branding)</div>
+                    <p class="strategy-text">เร่งใช้โครงสร้างการทำงานที่คล่องตัว (S3) ปรับปรุงและพัฒนาหลักสูตรสถานศึกษาให้มีจุดเด่นทางวิชาการที่ชัดเจนและจับต้องได้ เพื่อสร้างความเชื่อมั่น แข่งขันกับสถาบันคู่แข่ง (T2) และป้องกันการย้ายโรงเรียน</p>
+                    <div class="strategy-mapping">จับคู่ปัจจัย: S3, S4 + T2</div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th>จุดอ่อนภายใน (Weaknesses - W)<br><span style="font-weight:normal; font-size:9.5pt; color:#64748b;">W1: ครูภาระงาน/เอกสารล้นมือ<br>W2: ขาดแคลนห้องปฏิบัติการที่ทันสมัย</span></th>
+            <td class="tows-strategy-box">
+                <span class="strategy-tag tag-wo">กลยุทธ์เชิงแก้ไข (WO Strategy)</span>
+                
+                <div class="strategy-item">
+                    <div class="strategy-title">WO1: ปฏิรูประบบงานด้วยเทคโนโลยีลดเอกสาร (EdTech for Admin reduction)</div>
+                    <p class="strategy-text">นำเครื่องมือเทคโนโลยี แพลตฟอร์มบริหารงานบุคคล หรือแอปพลิเคชันจัดการโครงการภายนอก (O2) เข้ามาช่วยลดขั้นตอนและปริมาณงานเอกสารของครู (W1) เพื่อคืนเวลากลับสู่การพัฒนาการสอนอย่างแท้จริง</p>
+                    <div class="strategy-mapping">จับคู่ปัจจัย: W1 + O2</div>
+                </div>
+
+                <div class="strategy-item">
+                    <div class="strategy-title">WO2: โมเดลแบ่งปันทรัพยากรห้องแล็บพันธมิตร (Shared Resource Network)</div>
+                    <p class="strategy-text">แก้ปัญหาขาดงบประมาณและห้องปฏิบัติการ (W2) โดยการจัดทำบันทึกข้อตกลง (MOU) ร่วมกับเครือข่ายสถานศึกษาขนาดใหญ่หรือสถาบันอุดมศึกษาในชุมชน (O1) เพื่อขอนำนักเรียนเข้าใช้ห้องปฏิบัติการหรือจัดค่ายวิทยาศาสตร์ร่วมกัน</p>
+                    <div class="strategy-mapping">จับคู่ปัจจัย: W2 + O1</div>
+                </div>
+            </td>
+            <td class="tows-strategy-box">
+                <span class="strategy-tag tag-wt">กลยุทธ์เชิงรับ (WT Strategy)</span>
+                
+                <div class="strategy-item">
+                    <div class="strategy-title">WT1: ควบรวมโครงการเชิงกลยุทธ์และมุ่งเน้น Active Learning ต้นทุนต่ำ</div>
+                    <p class="strategy-text">เร่งทบทวนและควบรวมโครงการวิชาการที่ซ้ำซ้อนเพื่อลดภาระงานครู (W1) พร้อมทั้งปรับเปลี่ยนรูปแบบการสอนมาเน้นการจัดการเรียนรู้เชิงรุก (Active Learning) ที่ใช้วัสดุท้องถิ่นหรือนวัตกรรมต้นทุนต่ำ เพื่อแก้ปัญหางบโรงเรียนจำกัด (W2) และไม่เพิ่มภาระทางการเงินแก่ผู้ปกครอง (T1)</p>
+                    <div class="strategy-mapping">จับคู่ปัจจัย: W1, W2 + T1, T2</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Section 3: Actionable Roadmap -->
+    <div class="section-title">3. แผนที่นำทางการดำเนินงานเพื่อขับเคลื่อนกลยุทธ์ (Actionable Roadmap)</div>
+    
+    <table class="roadmap-table">
+        <thead>
+            <tr>
+                <th style="width: 15%;">ระยะเวลา</th>
+                <th style="width: 35%;">แผนงาน / กิจกรรมเชิงกลยุทธ์</th>
+                <th style="width: 15%;">ความสำคัญ</th>
+                <th style="width: 15%;">ผู้รับผิดชอบหลัก</th>
+                <th style="width: 20%;">ตัวชี้วัดความสำเร็จ (KPI)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="timeline-badge bg-short">ระยะสั้น (1-3 เดือน)</span></td>
+                <td>
+                    <strong>โครงการลดภาระงานเอกสารครูเพื่อคืนเวลาสู่ห้องเรียน</strong><br>
+                    - ควบรวมและคัดกรองโครงการวิชาการที่ซ้ำซ้อน<br>
+                    - นำซอฟต์แวร์/แพลตฟอร์มออนไลน์มาช่วยจัดการงานสารบรรณวิชาการ (กลยุทธ์ WO1, WT1)
+                </td>
+                <td><span class="priority-indicator priority-high"></span>วิกฤตสูง</td>
+                <td>หัวหน้าฝ่ายวิชาการ และงานสารสนเทศ</td>
+                <td>ภาระงานเอกสารของครูลดลงไม่น้อยกว่า 30%, ครูมีเวลาเพิ่มขึ้นในตารางการพัฒนาแผนการสอน</td>
+            </tr>
+            <tr>
+                <td><span class="timeline-badge bg-medium">ระยะกลาง (3-6 เดือน)</span></td>
+                <td>
+                    <strong>โครงการสร้างภาคีเครือข่ายแชร์ทรัพยากรและคลังสมองดิจิทัล</strong><br>
+                    - จัดทำ MOU ร่วมกับสถานศึกษาพันธมิตรเพื่อใช้ห้องปฏิบัติการร่วมกัน (กลยุทธ์ WO2)<br>
+                    - พัฒนาคลังสื่อดิจิทัลและเปิดให้เข้าถึงแบบยืดหยุ่นต้นทุนต่ำ (กลยุทธ์ SO2, ST1)
+                </td>
+                <td><span class="priority-indicator priority-medium"></span>สำคัญมาก</td>
+                <td>รองผู้อำนวยการฝ่ายวิชาการ และคณะกรรมการสถานศึกษา</td>
+                <td>มีข้อตกลงแชร์ทรัพยากรอย่างน้อย 2 เครือข่าย, นักเรียนกลุ่มขาดแคลนเข้าถึงสื่อการเรียนทางเลือกได้ 100%</td>
+            </tr>
+            <tr>
+                <td><span class="timeline-badge bg-long">ระยะยาว (6-12 เดือน)</span></td>
+                <td>
+                    <strong>โครงการยกระดับแบรนด์วิชาการและหลักสูตรสถานศึกษาเฉพาะทาง</strong><br>
+                    - ปรับปรุงหลักสูตรสถานศึกษาให้มีจุดเด่น แตกต่าง และตอบโจทย์อนาคต<br>
+                    - พัฒนากระบวนการจัดการเรียนรู้แบบ Active Learning ทุกกลุ่มสาระ (กลยุทธ์ ST2)
+                </td>
+                <td><span class="priority-indicator priority-low"></span>เชิงยุทธศาสตร์</td>
+                <td>ผู้บริหารโรงเรียน และคณะครูทุกกลุ่มสาระฯ</td>
+                <td>อัตราการคงอยู่ของนักเรียนเดิมสูงขึ้นเป็น 95%, ความพึงพอใจของผู้ปกครองเพิ่มขึ้นอย่างมีนัยสำคัญ</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Footer -->
+    <div class="dashboard-footer">
+        © 2026 Academic Management Department. Generated successfully from Executive SWOT Analysis Workshop.
+    </div>
+
+</div>
+
+</body>
+</html>
