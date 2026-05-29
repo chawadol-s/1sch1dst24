@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบเลือกชุมนุม ภาคเรียนที่ 1 ปีการศึกษา 2569</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google Sans:wght@400;700&family=Google Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    @import url('https://fonts.cdnfonts.com/css/open-sans');
+    body {
+      font-family: 'Google Sans', 'Google Sans', sans-serif;
+    }
+    .mono-font {
+      font-family: 'Google Sans', monospace;
+    }
+    .wired-border {
+      box-shadow: 6px 6px 0px 0px #0f172a;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 3px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #0284c7;
+    }
+    [v-cloak] { display: none; }
+  </style>
+</head>
+<body class="h-full text-slate-900 antialiased selection:bg-sky-500 selection:text-white">
+
+  <div id="app" class="min-h-screen flex flex-col justify-between p-4 md:p-8" v-cloak>
+    
+<header class="w-full border-b-4 border-slate-900 pb-6 mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+      <div class="flex items-center gap-5">
+        <div class="w-16 h-16 bg-slate-900 flex items-center justify-center p-2 text-white border border-slate-900 flex-shrink-0 relative overflow-hidden group">
+          <div class="absolute inset-0 bg-sky-600 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+          <img src="https://lh7-rt.googleusercontent.com/formsz/AN7BsVCMVLHFef036S5fmqxlJUpniiiVttN4yUlg5_hUZjjiFwq4RMq87SKzTl1ypOijjiRN-3Uy343fBJa6PwVQrWAzTVH018xndAjMepPAlaq9kkBMlxJwZh6VX5YtQKkdKjBblNf6dXBB2sywd-2OfZVfUFQeJDxt5ap0TZ2a4HoOYfuZ2czNKyyyteJOMXcKX2r0Xiho5rHLXgUr=w1024?key=-E3K8BZhYnG6zBuib6Y9-g" alt="School Logo" class="w-full h-full object-contain relative z-10">
+        </div>
+        <div>
+          <span class="text-xs uppercase tracking-[0.0 em] font-bold text-sky-600 block mb-1 mono-font">งานวิชาการ โรงเรียนฝางวิทยายน</span>
+          <h1 class="text-3xl md:text-5xl font-black tracking-tighter leading-none text-slate-900 uppercase">
+            ข้อมูลชุมนุม <span class="text-sky-600">ภาคเรียนที่ 1/2569</span>
+          </h1>
+        </div>
+      </div>
+      
+      <button 
+        @click="refreshData" 
+        :disabled="loading"
+        class="flex items-center gap-2 bg-slate-900 hover:bg-sky-600 text-white font-bold py-3 px-5 text-xs uppercase tracking-widest mono-font border-l-4 border-sky-400 disabled:bg-slate-300 transition-colors"
+      >
+        <i data-lucide="refresh-cw" class="w-4 h-4" :class="{'animate-spin': loading}"></i>
+        {{ loading ? 'SYNCING_METRICS...' : 'REFRESH_DATABASE' }}
+      </button>
+    </header>
+
+    <div v-if="loading && firstLoad" class="flex-1 flex flex-col items-center justify-center py-20">
+      <div class="w-12 h-12 border-4 border-slate-200 border-t-sky-600 rounded-full animate-spin mb-4"></div>
+      <p class="text-xs uppercase tracking-widest text-slate-500 animate-pulse mono-font">Compiling Executive Metrics Payload...</p>
+    </div>
+
+    <div v-if="errorMessage" class="mb-6 bg-red-50 border-l-4 border-red-600 p-4 text-sm text-red-800 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <i data-lucide="alert-triangle" class="text-red-600 w-5 h-5"></i>
+        <span><span class="font-bold uppercase mono-font">[STREAM_ERROR]</span> {{ errorMessage }}</span>
+      </div>
+      <button @click="errorMessage = ''" class="font-bold text-xl">&times;</button>
+    </div>
+
+    <main v-if="!firstLoad" class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <section class="lg:col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white border-2 border-slate-900 p-6 wired-border relative overflow-hidden">
+          <div class="absolute right-4 bottom-2 text-slate-100"><i data-lucide="users" class="w-24 h-24"></i></div>
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Total Population</span>
+          <div class="text-4xl font-black text-slate-900 mono-font">{{ summary.totalStudents }}</div>
+          <p class="text-xs text-slate-500 mt-2">จำนวนนักเรียนทั้งหมดในฐานข้อมูลโรงเรียน</p>
+        </div>
+        <div class="bg-white border-2 border-slate-900 p-6 wired-border relative overflow-hidden">
+          <div class="absolute right-4 bottom-2 text-sky-50"><i data-lucide="check-square" class="w-24 h-24 text-sky-100"></i></div>
+          <span class="text-xs font-bold text-sky-600 uppercase tracking-wider block mb-1">Allocated Seats</span>
+          <div class="text-4xl font-black text-sky-600 mono-font">{{ summary.totalRegistered }}</div>
+          <p class="text-xs text-slate-500 mt-2">ลงทะเบียนสำเร็จแล้ว คิดเป็น <span class="font-bold text-sky-600">{{ summary.completionRate }}%</span></p>
+        </div>
+        <div class="bg-white border-2 border-slate-900 p-6 wired-border relative overflow-hidden">
+          <div class="absolute right-4 bottom-2 text-red-50"><i data-lucide="user-x" class="w-24 h-24 text-red-100"></i></div>
+          <span class="text-xs font-bold text-red-500 uppercase tracking-wider block mb-1">Unallocated Backlog</span>
+          <div class="text-4xl font-black text-red-500 mono-font">{{ summary.totalUnregistered }}</div>
+          <p class="text-xs text-slate-500 mt-2">นักเรียนที่ยังตกค้างและไม่มีชื่อในชุมนุมใด ๆ</p>
+        </div>
+      </section>
+
+      <section class="lg:col-span-12 bg-white border-2 border-slate-900 p-6 wired-border">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+          <i data-lucide="pie-chart" class="w-4 h-4 text-slate-700"></i> Real-time Capacity Allocation Chart
+        </h3>
+        <div class="relative w-full max-h-80 flex justify-center">
+          <canvas id="analyticsChart"></canvas>
+        </div>
+      </section>
+
+
+      <section class="lg:col-span-8 bg-white border-2 border-slate-900 p-6 wired-border">
+        <div class="border-b-2 border-slate-900 pb-4 mb-6 flex justify-between items-center">
+          <h3 class="text-xl font-black uppercase tracking-tight flex items-center gap-2">
+            <i data-lucide="folder-search" class="w-6 h-6 text-sky-600"></i> Club Roster Inspector
+          </h3>
+          <span class="text-xs bg-slate-100 px-3 py-1 text-slate-500 font-bold">คลิกเลือกชุมนุมเพื่อดูรายชื่อนักเรียน</span>
+        </div>
+
+        <div class="space-y-3">
+          <div v-for="club in clubs" :key="club.id" class="border-2 border-slate-900">
+            <div 
+              @click="toggleClub(club.id)"
+              class="p-4 bg-slate-50 hover:bg-sky-50 cursor-pointer flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors select-none"
+            >
+              <div class="flex items-start gap-3">
+                <i :data-lucide="activeClubId === club.id ? 'chevron-down' : 'chevron-right'" class="w-5 h-5 text-slate-600 mt-1 flex-shrink-0"></i>
+                <div>
+                  <h4 class="font-black text-lg text-slate-900 leading-tight">{{ club.name }}</h4>
+                  <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider mono-font">ID: {{ club.id }}</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                <span class="text-sm font-bold mono-font px-3 py-1" :class="club.status === 'Full' ? 'bg-red-100 text-red-700':'bg-sky-100 text-sky-700'">
+                  {{ club.current }} / {{ club.max }} SEATS
+                </span>
+              </div>
+            </div>
+
+            <div v-if="activeClubId === club.id" class="border-t-2 border-slate-900 p-4 bg-white animate-fade-in">
+              <div v-if="club.students.length === 0" class="text-center py-6 text-slate-400 text-sm italic">
+                <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i> ยังไม่มีนักเรียนลงทะเบียนในชุมนุมนี้
+              </div>
+              <div v-else class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                  <thead>
+                    <tr class="border-b-2 border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[11px] font-mono">
+                      <th class="pb-2 w-24">ID</th>
+                      <th class="pb-2">Full Name</th>
+                      <th class="pb-2">Class / Room</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                    <tr v-for="student in club.students" :key="student.id" class="hover:bg-slate-50 font-medium">
+                      <td class="py-2.5 font-bold text-slate-600 mono-font">{{ student.id }}</td>
+                      <td class="py-2.5 text-slate-900">{{ student.name }}</td>
+                      <td class="py-2.5 text-slate-500">{{ student.displayClass }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="lg:col-span-4 flex flex-col gap-6">
+        
+        <div class="bg-white border-2 border-slate-900 p-6 wired-border relative">
+          <div class="absolute top-0 right-0 bg-slate-900 text-white text-[9px] px-3 py-1 uppercase tracking-wider mono-font">
+            Student Terminal
+          </div>
+          <h3 class="text-xl font-black uppercase tracking-tight mb-2 flex items-center gap-2">
+            <i data-lucide="search" class="w-5 h-5 text-sky-600"></i> ตรวจสอบสิทธิ์
+          </h3>
+          <p class="text-xs text-slate-500 mb-6">พิมพ์ชื่อหรือรหัส 5 หลักเพื่อเช็กว่าตนเองสังเกตอยู่ชุมนุมใด</p>
+          
+          <input 
+            type="text" 
+            v-model="searchQuery"
+            @input="searchStudentAllocation"
+            class="w-full bg-slate-50 border-2 border-slate-900 p-3 font-bold text-md focus:outline-none focus:border-sky-600 focus:bg-white mb-4 transition-colors"
+            placeholder="รหัสประจำตัว หรือชื่อ-สกุล..."
+          >
+
+          <div v-if="searchResult" class="mt-4 animate-fade-in">
+            <div v-if="searchResult.isRegistered" class="bg-emerald-50 border-2 border-emerald-600 p-4">
+              <div class="flex items-center gap-2 text-emerald-800 text-xs font-bold uppercase mono-font mb-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4"></i> FOUND // MATCH_LOCKED
+              </div>
+              <div class="text-sm font-bold text-slate-900">{{ searchResult.student.name }}</div>
+              <div class="text-[11px] text-slate-400 mono-font mt-0.5">{{ searchResult.student.displayClass }}</div>
+              <div class="mt-3 pt-3 border-t border-emerald-200">
+                <span class="text-[10px] text-emerald-700 font-bold block uppercase tracking-widest">สังกัดชุมนุม</span>
+                <span class="text-base font-black text-emerald-900 leading-tight block mt-0.5">{{ searchResult.clubName }}</span>
+              </div>
+            </div>
+
+            <div v-else class="bg-red-50 border-2 border-red-600 p-4">
+              <div class="flex items-center gap-2 text-red-800 text-xs font-bold uppercase mono-font mb-2">
+                <i data-lucide="shield-alert" class="w-4 h-4"></i> WARNING // UNALLOCATED
+              </div>
+              <div class="text-sm font-bold text-slate-900">{{ searchResult.student.name }}</div>
+              <div class="text-[11px] text-slate-400 mono-font mt-0.5">{{ searchResult.student.displayClass }}</div>
+              <p class="text-xs text-red-700 mt-3 leading-snug">คุณยังไม่ได้ทำการเลือกรัฐวิชาเลือกชุมนุมในระบบหลัก กรุณาดำเนินการลงทะเบียนโดยด่วนที่สุด</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-sky-600 text-white p-6 border-4 border-slate-900 wired-border flex flex-col justify-between gap-6 relative group overflow-hidden">
+          <div class="absolute -right-10 -bottom-10 text-sky-500 opacity-20 transform group-hover:scale-110 transition-transform duration-500">
+            <i data-lucide="link-2" class="w-44 h-44"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 mb-2 mono-font text-xs font-bold bg-sky-700 w-max px-2 py-0.5">
+              <span class="w-2 h-2 rounded-full bg-red-400 animate-ping"></span> SYSTEM_REDIRECT
+            </div>
+            <h4 class="text-2xl font-black tracking-tight leading-tight uppercase">
+              ยังไม่ได้ลงทะเบียน<br>ชุมนุมใช่ไหม?
+            </h4>
+            <p class="text-sky-100 text-xs mt-3 leading-relaxed font-light">
+              ระบบตรวจสอบพบว่ายังมีนักเรียนตกค้าง สิทธิ์การเลือกโควตาของคุณกำลังจะหมดลง คลิกปุ่มด้านล่างเพื่อเข้าสู่หน้าต่างเลือกวิชาเรียนหลักทันที
+            </p>
+          </div>
+          
+          <a 
+            href="https://chawadol-s.github.io/1sch1dst24/elective-1-2569.html" 
+            target="_blank"
+            class="w-full bg-slate-900 hover:bg-white hover:text-slate-900 text-white font-black text-center py-4 text-xs uppercase tracking-widest transition-colors flex items-center justify-center gap-2 relative z-10"
+          >
+            <span>Go To Registration Portal</span>
+            <i data-lucide="external-link" class="w-4 h-4"></i>
+          </a>
+        </div>
+
+      </section>
+
+    </main>
+
+    <footer class="w-full border-t-2 border-slate-900 mt-12 pt-6 flex flex-col md:flex-row justify-between items-center text-[10px] font-mono text-slate-500 gap-4 mono-font">
+      <div>&copy; 2026 ANALYTICS COMPILER NODE // POWERED BY VUE & CHART.JS.</div>
+      <div class="flex gap-4 tracking-wider">
+        <span>STREAM: SECURED_REST_API</span>
+        <span>STATUS: ACTIVE_SYNC</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    // ⚠️ สลับเอา URL ของ Web App แดชบอร์ดตัวใหม่ที่คุณก็อปปี้จาก Apps Script ใน Step 2 มาใส่ที่นี่ครับ!
+    const ANALYTICS_API_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz1JQeCmtbYReR0FwQOG5E7w3MoZtKr2BWbvbokba-Gkf8DlUEoPR9zlP-MfQ7UwM-ikw/exec';
+
+    const { createApp, ref, onMounted, nextTick } = Vue;
+
+    createApp({
+      setup() {
+        const loading = ref(true);
+        const firstLoad = ref(true);
+        const errorMessage = ref('');
+        
+        const summary = ref({});
+        const clubs = ref([]);
+        const unregisteredStudents = ref([]);
+        
+        const activeClubId = ref(null);
+        const searchQuery = ref('');
+        const searchResult = ref(null);
+        const timestamp = ref('');
+        
+        let chartInstance = null;
+
+        const refreshIcons = () => {
+          nextTick(() => { if (window.lucide) lucide.createIcons(); });
+        };
+
+        // METHOD 1: CORE DATA STREAM FROM API
+        const fetchAnalyticsState = async () => {
+          loading.value = true;
+          errorMessage.value = '';
+          try {
+            const response = await fetch(ANALYTICS_API_ENDPOINT, { method: 'POST' });
+            const data = await response.json();
+            
+            if (data.success) {
+              summary.value = data.summary;
+              clubs.value = data.clubs;
+              unregisteredStudents.value = data.unregisteredStudents;
+              
+              timestamp.value = new Date().toLocaleTimeString('en-US', { hour12: false });
+              firstLoad.value = false;
+              
+              // สั่งวาดกราฟสถิติหลังจากข้อมูลอัปเดตลง DOM แล้ว
+              nextTick(() => {
+                renderAllocationChart();
+              });
+              
+              // ล้างช่องเสิร์ชถ้าข้อมูลรีเฟรชใหม่เพื่อกันการบั๊ก
+              if (searchQuery.value) searchStudentAllocation();
+              
+              refreshIcons();
+            } else {
+              errorMessage.value = data.message;
+            }
+          } catch (err) {
+            errorMessage.value = 'Failed to fetch directory matrices from Google node.';
+          } finally {
+            loading.value = false;
+          }
+        };
+
+        const refreshData = () => {
+          fetchAnalyticsState();
+        };
+
+        // METHOD 2: INTERACTIVE ROSTER ACCORDION DETECTOR
+        const toggleClub = (id) => {
+          activeClubId.value = activeClubId.value === id ? null : id;
+          refreshIcons();
+        };
+
+        // METHOD 3: CLIENT SIDE BI-DIRECTIONAL SEARCH ENGINE (ZERO LATENCY)
+        const searchStudentAllocation = () => {
+          const query = searchQuery.value.trim().toLowerCase();
+          if (query.length < 2) {
+            searchResult.value = null;
+            return;
+          }
+
+          // 3.1 ค้นหาในกลุ่มที่ลงทะเบียนสำเร็จแล้ว (โดยควานลึกไปในก้อนชีตย่อยของแต่ละชุมนุม)
+          for (let club of clubs.value) {
+            const match = club.students.find(s => 
+              s.id.includes(query) || s.name.toLowerCase().includes(query)
+            );
+            if (match) {
+              searchResult.value = {
+                isRegistered: true,
+                student: match,
+                clubName: club.name
+              };
+              refreshIcons();
+              return;
+            }
+          }
+
+          // 3.2 หากสเต็ปแรกไม่เจอ ให้ไปควานหาต่อในบัญชีรายชื่อเด็กตกค้าง
+          const unregMatch = unregisteredStudents.value.find(s => 
+            s.id.includes(query) || s.name.toLowerCase().includes(query)
+          );
+          if (unregMatch) {
+            searchResult.value = {
+              isRegistered: false,
+              student: unregMatch,
+              clubName: ''
+            };
+            refreshIcons();
+            return;
+          }
+
+          // หากควานไม่เจอเลยทั้งระบบ
+          searchResult.value = null;
+        };
+
+        // METHOD 4: CHART.JS GRAPH COMPILER ENGINE
+        const renderAllocationChart = () => {
+          const ctx = document.getElementById('analyticsChart');
+          if (!ctx) return;
+
+          // ดึงโครงสร้างข้อมูลชื่อชุมนุมและสัดส่วนที่นั่งปัจจุบันออกมาเตรียมพล็อตลงกราฟ
+          const labels = clubs.value.map(c => c.name.substring(0, 15) + '...');
+          const currentSeatsData = clubs.value.map(c => c.current);
+          const maxSeatsData = clubs.value.map(c => c.max);
+
+          // ถ้าเคยกราฟทำงานอยู่ก่อนหน้า ให้ทำลายทิ้งเพื่อพล็อตโครงก้อนใหม่ (ป้องกันอาการกราฟซ้อนกระพริบ)
+          if (chartInstance) chartInstance.destroy();
+
+          chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: 'นักเรียนปัจจุบัน (คน)',
+                  data: currentSeatsData,
+                  backgroundColor: '#0284c7', // Sky-600
+                  borderColor: '#0f172a',
+                  borderWidth: 2,
+                },
+                {
+                  label: 'โควตาสูงสุด (ที่นั่ง)',
+                  data: maxSeatsData,
+                  backgroundColor: '#f1f5f9', // Slate-100
+                  borderColor: '#cbd5e1',
+                  borderWidth: 1,
+                  borderDash: [5, 5]
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                x: { grid: { display: false } }
+              },
+              plugins: {
+                legend: { labels: { font: { family: 'Prompt', weight: 'bold' } } }
+              }
+            }
+          });
+        };
+
+        onMounted(() => {
+          fetchAnalyticsState();
+        });
+
+        return {
+          loading, firstLoad, errorMessage, summary, clubs, activeClubId,
+          searchQuery, searchResult, timestamp,
+          refreshData, toggleClub, searchStudentAllocation
+        };
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
